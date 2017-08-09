@@ -1,0 +1,21 @@
+{
+  "broker_username": "user",
+  "broker_password": "password",
+  "route_services": [
+    {
+      "name": "my-route-service",
+      "description": "description of my service (this parameter is optional)",
+      "tags": [
+        "route-service",
+        "(this parameter is optional)"
+      ],
+      "plans": [
+        {
+          "name": "plan-my-route-service",
+          "description": "description of my plan (this parameter is optional)",
+          "url": "http://route.to.forward.com"
+        }
+      ]
+    }
+  ]
+}
