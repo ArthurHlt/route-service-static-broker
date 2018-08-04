@@ -1,17 +1,18 @@
 package main
 
 import (
+	"code.cloudfoundry.org/lager"
 	"context"
-	"github.com/pivotal-cf/brokerapi"
+	"flag"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"net/http"
 	"github.com/cloudfoundry-community/gautocloud"
 	"github.com/cloudfoundry-community/gautocloud/connectors/generic"
-	"code.cloudfoundry.org/lager"
-	"os"
-	"log"
 	"github.com/cloudfoundry-community/gautocloud/logger"
+	"github.com/pivotal-cf/brokerapi"
+	"github.com/satori/go.uuid"
+	"log"
+	"net/http"
+	"os"
 )
 
 const (
@@ -24,8 +25,8 @@ func init() {
 
 type RouteSvcStaticConfig struct {
 	RouteServices  []RouteSvc `cloud:"route_services"`
-	BrokerUsername string `cloud:"broker_username" cloud-default:"brokeruser"`
-	BrokerPassword string `cloud:"broker_password" cloud-default:"password"`
+	BrokerUsername string     `cloud:"broker_username" cloud-default:"brokeruser"`
+	BrokerPassword string     `cloud:"broker_password" cloud-default:"password"`
 }
 type RouteSvcStaticBroker struct {
 	routeServices []RouteSvc
@@ -57,9 +58,9 @@ func (r *RouteSvc) prepare() (RouteSvc, error) {
 	if r.Plans == nil || len(r.Plans) == 0 {
 		r.Plans = []Plan{
 			{
-				Name: "plan-" + r.Name,
+				Name:        "plan-" + r.Name,
 				Description: fmt.Sprintf("Default plan for route service %s forwarding to url %s", r.Name, r.Url),
-				Url: r.Url,
+				Url:         r.Url,
 			},
 		}
 	}
@@ -119,8 +120,8 @@ func (b *RouteSvcStaticBroker) Services(context.Context) []brokerapi.Service {
 		plans := make([]brokerapi.ServicePlan, 0)
 		for _, plan := range routeSvc.Plans {
 			plans = append(plans, brokerapi.ServicePlan{
-				ID: plan.Id,
-				Name: plan.Name,
+				ID:          plan.Id,
+				Name:        plan.Name,
 				Description: plan.Description,
 			})
 		}
@@ -132,7 +133,7 @@ func (b *RouteSvcStaticBroker) Services(context.Context) []brokerapi.Service {
 			Tags:          routeSvc.Tags,
 			PlanUpdatable: false,
 			Requires:      []brokerapi.RequiredPermission{brokerapi.PermissionRouteForwarding},
-			Plans: plans,
+			Plans:         plans,
 		})
 	}
 	return services
@@ -172,8 +173,14 @@ func (b *RouteSvcStaticBroker) Update(context context.Context, instanceID string
 }
 
 func main() {
+	debugInit := flag.Bool("debug-init", false, "enable init delog logs")
+	flag.Parse()
+
 	conf := &RouteSvcStaticConfig{}
-	gautocloud.SetLogger(log.New(os.Stdout, "", log.Ldate | log.Ltime), logger.Ldebug)
+	if *debugInit {
+		gautocloud.SetLogger(log.New(os.Stdout, "", log.Ldate|log.Ltime), logger.Ldebug)
+	}
+
 	err := gautocloud.Inject(conf)
 	if err != nil {
 		panic(err)
@@ -202,5 +209,5 @@ func main() {
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}
-	http.ListenAndServe(":" + port, nil)
+	http.ListenAndServe(":"+port, nil)
 }
