@@ -155,7 +155,7 @@ func (b *RouteSvcStaticBroker) Bind(context context.Context, instanceID string, 
 		).WithEmptyResponse().Build()
 	}
 	return brokerapi.Binding{
-		Credentials:     "",
+		Credentials:     map[string]interface{}{},
 		RouteServiceURL: url,
 	}, nil
 }
